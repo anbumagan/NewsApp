@@ -30,6 +30,7 @@ const NewsFeed: React.FC = () => {
   const news = useQuery(News);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [currentNews, setCurrentNews] = useState<Array<News>>([]);
+  const [nextbadgeLoad, setNextBadgeLoad] = useState(false);
   let rowRefs = new Map();
   const listRef = useRef<any>(null);
   const timerRef = useRef<any>(null);
@@ -70,8 +71,11 @@ const NewsFeed: React.FC = () => {
               });
             });
           });
+          setNextBadgeLoad(false);
         })
-        .catch(err => {});
+        .catch(err => {
+          setNextBadgeLoad(false);
+        });
     },
     [],
   );
@@ -241,6 +245,7 @@ const NewsFeed: React.FC = () => {
     if (
       Math.floor(news?.length / 10) === Math.floor((currentIndex + 10) / 10)
     ) {
+      setNextBadgeLoad(true);
       fetchInitialandCurrentNewsFeed(2, false);
     }
     startTimer();
@@ -251,58 +256,66 @@ const NewsFeed: React.FC = () => {
       <Text style={[styles.headerText, {marginVertical: 5}]}>
         News Headlines
       </Text>
-      {news && news?.length > 0 && (
-        <FlatList
-          ref={listRef}
-          data={currentNews}
-          ListHeaderComponent={() => {
-            return pinnedNews.current?.length > 0 ? (
-              <View>
-                {pinnedNews.current?.map((item: any, index: any) => {
-                  let props = {item, index} as any;
-                  return (
-                    <Swipeable
-                      key={index + 'Header'}
-                      ref={ref => {
-                        rowRefs.set(props?.item?._id, ref);
-                      }}
-                      renderLeftActions={renderLeftActions}
-                      renderRightActions={renderRightActions}
-                      onSwipeableOpen={e => {
-                        [...rowRefs.entries()].forEach(([key, ref]) => {
-                          if (key !== props?.item?._id && ref) ref.close();
-                        });
-                        onSwipeActions(e, props?.item);
-                      }}>
-                      <RenderNewsCard {...props} />
-                    </Swipeable>
-                  );
-                })}
-              </View>
-            ) : (
-              <></>
-            );
-          }}
-          renderItem={props => {
-            let ref: any;
-            return (
-              <Swipeable
-                ref={ref => {
-                  rowRefs.set(props?.item?._id, ref);
-                }}
-                renderLeftActions={renderLeftActions}
-                renderRightActions={renderRightActions}
-                onSwipeableOpen={e => {
-                  [...rowRefs.entries()].forEach(([key, ref]) => {
-                    if (key !== props?.item?._id && ref) ref.close();
-                  });
-                  onSwipeActions(e, props?.item);
-                }}>
-                <RenderNewsCard {...props} />
-              </Swipeable>
-            );
-          }}
-        />
+      {nextbadgeLoad ? (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <Text>Loading next badge...</Text>
+        </View>
+      ) : (
+        <>
+          {news && news?.length > 0 && (
+            <FlatList
+              ref={listRef}
+              data={currentNews}
+              ListHeaderComponent={() => {
+                return pinnedNews.current?.length > 0 ? (
+                  <View>
+                    {pinnedNews.current?.map((item: any, index: any) => {
+                      let props = {item, index} as any;
+                      return (
+                        <Swipeable
+                          key={index + 'Header'}
+                          ref={ref => {
+                            rowRefs.set(props?.item?._id, ref);
+                          }}
+                          renderLeftActions={renderLeftActions}
+                          renderRightActions={renderRightActions}
+                          onSwipeableOpen={e => {
+                            [...rowRefs.entries()].forEach(([key, ref]) => {
+                              if (key !== props?.item?._id && ref) ref.close();
+                            });
+                            onSwipeActions(e, props?.item);
+                          }}>
+                          <RenderNewsCard {...props} />
+                        </Swipeable>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <></>
+                );
+              }}
+              renderItem={props => {
+                let ref: any;
+                return (
+                  <Swipeable
+                    ref={ref => {
+                      rowRefs.set(props?.item?._id, ref);
+                    }}
+                    renderLeftActions={renderLeftActions}
+                    renderRightActions={renderRightActions}
+                    onSwipeableOpen={e => {
+                      [...rowRefs.entries()].forEach(([key, ref]) => {
+                        if (key !== props?.item?._id && ref) ref.close();
+                      });
+                      onSwipeActions(e, props?.item);
+                    }}>
+                    <RenderNewsCard {...props} />
+                  </Swipeable>
+                );
+              }}
+            />
+          )}
+        </>
       )}
       <TouchableOpacity style={styles.floatingButton} onPress={onLoadNext}>
         <MaterailIcon
