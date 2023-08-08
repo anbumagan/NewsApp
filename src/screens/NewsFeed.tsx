@@ -33,7 +33,7 @@ const NewsFeed: React.FC = () => {
   let rowRefs = new Map();
   const listRef = useRef<any>(null);
   const timerRef = useRef<any>(null);
-  const randomNews = useRef<any>(null)
+  const randomNews = useRef<any>(null);
   const pinnedNews = useRef<any>([]);
 
   const randomIntFromInterval = (min: any, max: any) => {
@@ -42,7 +42,7 @@ const NewsFeed: React.FC = () => {
       let randomNum = Math.floor(Math.random() * (max - min + 1) + min);
       if (
         !pinnedNews.current
-          ?.map((el:any) => el?._id + '')
+          ?.map((el: any) => el?._id + '')
           ?.includes(news[randomNum]?._id + '')
       ) {
         randomArr.push(news[randomNum]);
@@ -56,6 +56,8 @@ const NewsFeed: React.FC = () => {
       fetchNewsFeed(page)
         .then((res: Array<object>) => {
           if (toDelete) {
+            setCurrentNews([]);
+            setCurrentIndex(0);
             realm.write(async () => {
               await realm.deleteAll();
             });
@@ -76,7 +78,7 @@ const NewsFeed: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      //await fetchInitialandCurrentNewsFeed(1, true);
+      await fetchInitialandCurrentNewsFeed(1, true);
     })();
   }, []);
 
@@ -85,10 +87,7 @@ const NewsFeed: React.FC = () => {
     timerRef.current = setInterval(() => {
       let resData = randomIntFromInterval(currentIndex + 10, news?.length - 1);
       setCurrentNews((prev: any) => {
-        return [
-          ...resData,
-          ...prev
-        ];
+        return [...resData, ...prev];
         // return [
         //   ...resData,
         //   ...prev?.filter(
@@ -105,17 +104,17 @@ const NewsFeed: React.FC = () => {
     startTimer();
 
     return () => {
-      clearInterval(timerRef?.current)
-    }
+      clearInterval(timerRef?.current);
+    };
   }, []);
 
   useEffect(() => {
-    if (currentNews?.length <= 0) {
+    if (currentNews?.length <= 0 && news?.length > 0) {
       let newArr = news.slice(currentIndex, currentIndex + 10);
       setCurrentIndex(currentIndex + 10);
       setCurrentNews(newArr);
     }
-  }, [news, currentNews]);
+  }, [news]);
 
   const RenderNewsCard = useCallback(
     ({item, index}: ListRenderItemInfo<News>) => {
@@ -128,10 +127,14 @@ const NewsFeed: React.FC = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-            {pinnedNews.current?.find((el:any) => el?._id + '' === _id + '') && (
+            {pinnedNews.current?.find(
+              (el: any) => el?._id + '' === _id + '',
+            ) && (
               <Pressable
                 onPress={() => {
-                  pinnedNews.current = pinnedNews.current?.filter((el: any) => el?._id + '' !== _id + '')
+                  pinnedNews.current = pinnedNews.current?.filter(
+                    (el: any) => el?._id + '' !== _id + '',
+                  );
                 }}
                 style={{justifyContent: 'center', alignItems: 'center'}}>
                 <Icon
@@ -195,7 +198,9 @@ const NewsFeed: React.FC = () => {
     switch (e) {
       case 'left':
         if (
-          pinnedNews.current.find((el:any) => el?._id + '' === item?._id + '') === undefined
+          pinnedNews.current.find(
+            (el: any) => el?._id + '' === item?._id + '',
+          ) === undefined
         ) {
           pinnedNews.current = [...pinnedNews.current, item];
           setCurrentNews(prev =>
@@ -205,7 +210,9 @@ const NewsFeed: React.FC = () => {
         break;
       case 'right':
         try {
-          pinnedNews.current = pinnedNews.current?.filter((el: any) => el?._id + '' !== item?._id + '');
+          pinnedNews.current = pinnedNews.current?.filter(
+            (el: any) => el?._id + '' !== item?._id + '',
+          );
           randomNews.current = randomNews?.current?.filter(
             (el: any) => el?._id + '' !== item?._id + '',
           );
@@ -217,7 +224,7 @@ const NewsFeed: React.FC = () => {
             await realm.delete(item);
           });
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
         break;
       default:
@@ -251,7 +258,7 @@ const NewsFeed: React.FC = () => {
           ListHeaderComponent={() => {
             return pinnedNews.current?.length > 0 ? (
               <View>
-                {pinnedNews.current?.map((item:any, index:any) => {
+                {pinnedNews.current?.map((item: any, index: any) => {
                   let props = {item, index} as any;
                   return (
                     <Swipeable
